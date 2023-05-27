@@ -3,7 +3,7 @@ class PjsDB {
     private $file;
 
     public function __construct($file) {
-        $this->file = $file;
+        $this->file = $file . ".xml"; // Ajout de l'extension .xml au nom du fichier
     }
 
     // Function to create an empty XML file
@@ -45,7 +45,7 @@ class PjsDB {
     }
 
     // Function to add a new element to the XML file with an automatically incremented identifier
-    public function addElement($name, $value) {
+    public function addElement($filename, $name, $value) {
         // Check if the XML file exists
         if (!file_exists($this->file)) {
             $this->createXMLFile();
@@ -73,7 +73,7 @@ class PjsDB {
     }
 
     // Function to update the value of an element in the XML file with a specified identifier
-    public function updateElement($name, $newValue, $identifier) {
+    public function updateElement($filename, $name, $newValue, $identifier) {
         // Check if the XML file exists
         if (!file_exists($this->file)) {
             $this->createXMLFile();
@@ -96,7 +96,7 @@ class PjsDB {
     }
 
     // Function to delete elements with a specified name in the XML file, with an optional identifier
-    public function deleteElements($name, $identifier = null) {
+    public function deleteElements($filename, $name, $identifier = null) {
         // Check if the XML file exists
         if (!file_exists($this->file)) {
             $this->createXMLFile();
@@ -123,16 +123,16 @@ class PjsDB {
 
 // Usage examples
 
-$db = new PjsDB("file.xml");
+$db = new PjsDB("filename");
 
 // Add a new element with an automatically incremented identifier
-$db->addElement("name", "John Doe");
+$db->addElement("filename", "name", "John Doe");
 
 // Update the value of an element with a specified identifier
-$db->updateElement("name", "Jane Smith", 1);
+$db->updateElement("filename", "name", "Jane Smith", 1);
 
 // Delete all elements with a specified name
-$db->deleteElements("name");
+$db->deleteElements("filename", "name");
 
 // Delete a single element with a specified identifier
-$db->deleteElements("name", 1);
+$db->deleteElements("filename", "name", 1);
