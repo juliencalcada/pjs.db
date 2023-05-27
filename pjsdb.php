@@ -1,4 +1,6 @@
 <?php
+require_once "ChromePhp.php";
+
 class PjsDB {
     private $file;
 
@@ -121,18 +123,97 @@ class PjsDB {
     }
 }
 
+
+
+
+// Vérifie si l'action est définie dans la requête
+if (isset($_POST['action'])) {
+  $action = $_POST['action'];
+
+    // Crée une instance de PjsDB
+    ChromePhp::log($_POST['filename']);
+    $db = new PjsDB($_POST['filename']);
+  
+
+  // Effectue l'action en fonction de la valeur de 'action'
+  switch ($action) {
+    case 'addElement':
+      if (isset($_POST['filename'], $_POST['name'], $_POST['value'])) {
+        $filename = $_POST['filename'];
+        $name = $_POST['name'];
+        $value = $_POST['value'];
+        $db->addElement($filename, $name, $value);
+        // Répond avec un code de succès
+        http_response_code(200);
+      } else {
+        // Répond avec un code d'erreur
+        http_response_code(400);
+      }
+      break;
+
+    case 'updateElement':
+      if (isset($_POST['filename'], $_POST['name'], $_POST['newValue'], $_POST['identifier'])) {
+        $filename = $_POST['filename'];
+        $name = $_POST['name'];
+        $newValue = $_POST['newValue'];
+        $identifier = $_POST['identifier'];
+        $db->updateElement($filename, $name, $newValue, $identifier);
+        // Répond avec un code de succès
+        http_response_code(200);
+      } else {
+        // Répond avec un code d'erreur
+        http_response_code(400);
+      }
+      break;
+
+    case 'deleteElement':
+      if (isset($_POST['filename'], $_POST['name'], $_POST['identifier'])) {
+        $filename = $_POST['filename'];
+        $name = $_POST['name'];
+        $identifier = $_POST['identifier'];
+        ChromePhp::log($identifier);
+        if ($identifier == "null") {
+            $identifier = null;
+        }
+        ChromePhp::log($identifier);
+        $db->deleteElements($filename, $name, $identifier);
+        // Répond avec un code de succès
+        http_response_code(200);
+      } else {
+        // Répond avec un code d'erreur
+        http_response_code(400);
+      }
+      break;
+
+    default:
+      // Répond avec un code d'erreur pour une action non prise en charge
+      http_response_code(400);
+      break;
+  }
+}
+
 // Usage examples
 
-$db = new PjsDB("filename");
+// $db = new PjsDB("filename");
 
-// Add a new element with an automatically incremented identifier
-$db->addElement("filename", "name", "John Doe");
+// // Add a new element with an automatically incremented identifier
+// $db->addElement("filename", "name", "John Doe");
 
-// Update the value of an element with a specified identifier
-$db->updateElement("filename", "name", "Jane Smith", 1);
+// // Update the value of an element with a specified identifier
+// $db->updateElement("filename", "name", "Jane Smith", 1);
 
-// Delete all elements with a specified name
-$db->deleteElements("filename", "name");
+// // Delete all elements with a specified name
+// $db->deleteElements("filename", "name");
 
-// Delete a single element with a specified identifier
-$db->deleteElements("filename", "name", 1);
+// // Delete a single element with a specified identifier
+// $db->deleteElements("filename", "name", 1);
+
+
+
+
+
+
+
+// TODO LIST
+// $lastIdentifier = $this->getLastIdentifier(name);
+// give name arg to func to start identifier to 1 for each type of obj
