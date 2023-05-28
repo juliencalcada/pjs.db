@@ -23,28 +23,52 @@ class PjsDB {
         $xml->save($this->file);
     }
 
-    // Function to retrieve the last used identifier in the XML file
-    public function getLastIdentifier() {
-        // Load the XML file
-        $xml = new DOMDocument();
-        $xml->load($this->file);
+    // // Function to retrieve the last used identifier in the XML file
+    // public function getLastIdentifier() {
+    //     // Load the XML file
+    //     $xml = new DOMDocument();
+    //     $xml->load($this->file);
 
-        $xpath = new DOMXPath($xml);
-        $query = "//*[@id]";
-        $elements = $xpath->query($query);
+    //     $xpath = new DOMXPath($xml);
+    //     $query = "//*[@id]";
+    //     $elements = $xpath->query($query);
 
-        $lastIdentifier = 0;
+    //     $lastIdentifier = 0;
 
-        // Iterate over the elements and find the last used identifier
-        foreach ($elements as $element) {
-            $identifier = intval($element->getAttribute("id"));
-            if ($identifier > $lastIdentifier) {
-                $lastIdentifier = $identifier;
-            }
+    //     // Iterate over the elements and find the last used identifier
+    //     foreach ($elements as $element) {
+    //         $identifier = intval($element->getAttribute("id"));
+    //         if ($identifier > $lastIdentifier) {
+    //             $lastIdentifier = $identifier;
+    //         }
+    //     }
+
+    //     return $lastIdentifier;
+    // }
+
+    // Function to retrieve the last used identifier in the XML file for a specific element type
+  public function getLastIdentifier($name) {
+    // Load the XML file
+    $xml = new DOMDocument();
+    $xml->load($this->file);
+
+    $xpath = new DOMXPath($xml);
+    $query = "//" . $name . "[@id]";
+    $elements = $xpath->query($query);
+
+    $lastIdentifier = 0;
+
+    // Iterate over the elements and find the last used identifier
+    foreach ($elements as $element) {
+        $identifier = intval($element->getAttribute("id"));
+        if ($identifier > $lastIdentifier) {
+            $lastIdentifier = $identifier;
         }
-
-        return $lastIdentifier;
     }
+
+    return $lastIdentifier;
+  }
+
 
     // Function to add a new element to the XML file with an automatically incremented identifier
     public function addElement($filename, $name, $value) {
@@ -54,7 +78,7 @@ class PjsDB {
         }
 
         // Retrieve the last used identifier
-        $lastIdentifier = $this->getLastIdentifier();
+        $lastIdentifier = $this->getLastIdentifier($name);
 
         // Increment the identifier for the new element
         $newIdentifier = $lastIdentifier + 1;
@@ -121,6 +145,51 @@ class PjsDB {
         // Save the modifications to the XML file
         $xml->save($this->file);
     }
+
+    // Function to retrieve element(s) from the XML file based on parameters
+    public function getElement($filename, $name = null, $identifier = null) {
+      // Load the XML file
+      $xml = new DOMDocument();
+      $xml->load($this->file);
+
+      // Create an XPath instance
+      $xpath = new DOMXPath($xml);
+
+      // Construct the XPath query based on the provided parameters
+      $query = "";
+      if ($name !== null && $identifier !== null) {
+        $query = "//" . $name . "[@id='" . $identifier . "']";
+      } elseif ($name !== null) {
+          $query = "//" . $name;
+      } else {
+          $query = "//*"; // Select all elements in the XML
+      }
+
+      // Execute the XPath query
+      $elements = $xpath->query($query);
+
+      // Prepare the result array
+      $result = [];
+
+      // Iterate over the elements and retrieve the information
+      foreach ($elements as $element) {
+          $info = [];
+          $info['name'] = $element->nodeName;
+          $info['value'] = $element->nodeValue;
+          $info['id'] = $element->getAttribute("id");
+          $result[] = $info;
+      }
+
+      if ($name === null && $identifier === null) {
+        unset($result[0]);
+        ChromePhp::log($result);
+      }
+
+      // Convert the result array to JSON format
+      $jsonResult = json_encode($result);
+
+      return $jsonResult;
+  }
 }
 
 
@@ -184,7 +253,25 @@ if (isset($_POST['action'])) {
         http_response_code(400);
       }
       break;
+    case 'getElement':
+      if (isset($_POST['filename'])) {
+          $filename = $_POST['filename'];
+          $name = isset($_POST['name']) ? $_POST['name'] : null;
+          $identifier = isset($_POST['identifier']) ? $_POST['identifier'] : null;
 
+          // Call the getElement function
+          $result = $db->getElement($filename, $name, $identifier);
+
+          // Respond with the result
+          echo json_encode($result);
+
+          // Répond avec un code de succès
+          http_response_code(200);
+      } else {
+          // Répond avec un code d'erreur
+          http_response_code(400);
+      }
+      break;
     default:
       // Répond avec un code d'erreur pour une action non prise en charge
       http_response_code(400);
@@ -194,19 +281,28 @@ if (isset($_POST['action'])) {
 
 // Usage examples
 
-// $db = new PjsDB("filename");
+$db = new PjsDB("filename");
 
-// // Add a new element with an automatically incremented identifier
-// $db->addElement("filename", "name", "John Doe");
+// Add a new element with an automatically incremented identifier
+// $db->addElement("filename", "age", "23");
 
-// // Update the value of an element with a specified identifier
+// Update the value of an element with a specified identifier
 // $db->updateElement("filename", "name", "Jane Smith", 1);
 
-// // Delete all elements with a specified name
+// Delete all elements with a specified name
 // $db->deleteElements("filename", "name");
 
-// // Delete a single element with a specified identifier
+// Delete a single element with a specified identifier
 // $db->deleteElements("filename", "name", 1);
+
+// Get all elements
+// ChromePhp::log($db->getElement("filename"));
+
+// Get all elements with a specified name
+// ChromePhp::log($db->getElement("filename", "name"));
+
+// Get a single element with a specified name and identifier
+ChromePhp::log($db->getElement("filename", "name", 2));
 
 
 
@@ -217,3 +313,7 @@ if (isset($_POST['action'])) {
 // TODO LIST
 // $lastIdentifier = $this->getLastIdentifier(name);
 // give name arg to func to start identifier to 1 for each type of obj
+
+// Write documentation for JS file
+
+// Add a read function
