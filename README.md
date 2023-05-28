@@ -58,6 +58,7 @@ Deletes elements with a specified name in the XML file, with an optional identif
 ```php
 // Delete all elements
 $db->deleteElements("filename", "name");
+
 // Delete specific element
 $db->deleteElements("filename", "name", 1);
 ```
