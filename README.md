@@ -63,7 +63,7 @@ $db->deleteElements("filename", "name");
 $db->deleteElements("filename", "name", 1);
 ```
 
-### getElement(`$filename`, `$name = null`, `$identifier = null`)
+### getElement(`$filename`, `$name` = null, `$identifier` = null)
 
 Retrieves element(s) from the XML file based on parameters.
 
